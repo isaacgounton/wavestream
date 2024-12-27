@@ -3,6 +3,7 @@ import { Station } from '../../types/station';
 import { StationCard } from './StationCard';
 import { AudioPlayer } from '../Player/AudioPlayer';
 import { useStations } from '../../hooks/useStations';
+import { useFavorites } from '../../hooks/useFavorites';
 
 export function StationList() {
   const { 
@@ -13,21 +14,17 @@ export function StationList() {
     totalPages, 
     setCurrentPage 
   } = useStations();
+  const { toggleFavorite, isFavorite } = useFavorites();
   const [currentStation, setCurrentStation] = useState<Station | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>([]);
 
   const handlePlayStation = (station: Station) => {
     setCurrentStation(station);
     setIsPlaying(true);
   };
 
-  const handleToggleFavorite = (stationId: string) => {
-    setFavorites(prev => 
-      prev.includes(stationId)
-        ? prev.filter(id => id !== stationId)
-        : [...prev, stationId]
-    );
+  const handleToggleFavorite = (station: Station) => {
+    toggleFavorite(station);
   };
 
   const handlePageChange = (page: number) => {
@@ -53,15 +50,15 @@ export function StationList() {
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {stations.map((station: Station, index: number) => (
           <StationCard
             key={station.id || `station-${index}`}
             station={station}
             isPlaying={currentStation?.id === station.id && isPlaying}
-            isFavorite={favorites.includes(station.id)}
+            isFavorite={isFavorite(station.id)}
             onPlay={() => handlePlayStation(station)}
-            onFavorite={() => handleToggleFavorite(station.id)}
+            onFavorite={() => handleToggleFavorite(station)}
           />
         ))}
       </div>

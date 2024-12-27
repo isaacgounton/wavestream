@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import { Radio, Menu, Search, Moon, Sun } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useStations } from '../../hooks/useStations';
@@ -7,11 +7,10 @@ import { useDebounce } from '../../hooks/useDebounce';
 export function Header() {
   const { isDarkMode, toggleTheme } = useTheme();
   const { searchStations, isLoading } = useStations();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = React.useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 2000);
 
-  // Effect to handle debounced search
-  useEffect(() => {
+  React.useEffect(() => {
     if (debouncedSearchTerm) {
       searchStations(debouncedSearchTerm);
     }
