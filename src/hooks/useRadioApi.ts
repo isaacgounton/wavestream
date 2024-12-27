@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { API_CONFIG } from '../config/api';
-import { getHeaders, rotateServer } from '../utils/apiHelpers';
+import { getHeaders } from '../utils/apiHelpers';
 import type { Station } from '../types/station';
 
 export function useRadioApi() {
@@ -29,7 +29,11 @@ export function useRadioApi() {
 
     try {
       const encodedQuery = encodeURIComponent(query);
-      const url = `/api/json/stations/search?name=${encodedQuery}&limit=${API_CONFIG.defaultLimit}&hidebroken=true`;
+      const baseUrl = import.meta.env.PROD 
+        ? `https://${API_CONFIG.baseUrls[0]}`  // Use first server in production
+        : '/api';
+      
+      const url = `${baseUrl}/json/stations/search?name=${encodedQuery}&limit=${API_CONFIG.defaultLimit}&hidebroken=true`;
 
       const response = await fetch(url, {
         headers: getHeaders(),
@@ -46,9 +50,6 @@ export function useRadioApi() {
       return data.filter((station: Station) => station.url && station.name);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'An error occurred';
-      if (message.includes('ERR_NAME_NOT_RESOLVED')) {
-        rotateServer(); // Move to next server
-      }
       setError(message);
       return [];
     } finally {
