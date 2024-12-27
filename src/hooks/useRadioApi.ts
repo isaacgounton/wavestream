@@ -8,6 +8,7 @@ export function useRadioApi() {
   const [error, setError] = useState<string | null>(null);
   const lastQueryRef = useRef<string>('');
   const [lastSearchTime, setLastSearchTime] = useState<number>(0);
+  const activeRequest = useRef<AbortController | null>(null);
 
   const searchStations = async (query: string): Promise<Station[]> => {
     const now = Date.now();
@@ -24,8 +25,16 @@ export function useRadioApi() {
     }
     lastQueryRef.current = query;
 
+    // Cancel any in-flight request
+    if (activeRequest.current) {
+      activeRequest.current.abort();
+    }
+
     setIsLoading(true);
     setError(null);
+
+    const controller = new AbortController();
+    activeRequest.current = controller;
 
     try {
       const encodedQuery = encodeURIComponent(query);
@@ -38,6 +47,7 @@ export function useRadioApi() {
       const response = await fetch(url, {
         headers: getHeaders(),
         mode: 'cors',
+        signal: controller.signal,
       });
 
       if (!response.ok || response.status === 429) {
@@ -49,11 +59,17 @@ export function useRadioApi() {
       const data = await response.json();
       return data.filter((station: Station) => station.url && station.name);
     } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return [];
+      }
       const message = err instanceof Error ? err.message : 'An error occurred';
       setError(message);
       return [];
     } finally {
-      setIsLoading(false);
+      if (activeRequest.current === controller) {
+        activeRequest.current = null;
+        setIsLoading(false);
+      }
     }
   };
 

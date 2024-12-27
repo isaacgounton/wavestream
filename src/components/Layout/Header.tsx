@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Radio, Menu, Search, Moon, Sun } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useStations } from '../../hooks/useStations';
@@ -8,18 +8,22 @@ export function Header() {
   const { isDarkMode, toggleTheme } = useTheme();
   const { searchStations, isLoading } = useStations();
   const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedSearchTerm = useDebounce(searchTerm, 2000);
 
-  // Use useCallback to prevent recreation of the function on every render
-  const handleSearch = useCallback(async () => {
+  // Effect to handle debounced search
+  useEffect(() => {
     if (debouncedSearchTerm) {
-      await searchStations(debouncedSearchTerm);
+      searchStations(debouncedSearchTerm);
     }
   }, [debouncedSearchTerm, searchStations]);
 
-  React.useEffect(() => {
-    handleSearch();
-  }, [handleSearch]);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setSearchTerm(newValue);
+    
+    // The actual search will be triggered by the debounced value
+    // through the useDebounce hook
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm">
@@ -35,12 +39,13 @@ export function Header() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="search"
-                placeholder="Search stations, genres, or countries..."
+                placeholder={isLoading ? "Searching..." : "Search stations, genres, or countries..."}
                 className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 
                          bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 
-                         focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                         focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                         disabled:opacity-50"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearchChange}
                 disabled={isLoading}
               />
             </div>
