@@ -19,8 +19,20 @@ export function StationList() {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const handlePlayStation = (station: Station) => {
-    setCurrentStation(station);
-    setIsPlaying(true);
+    if (currentStation?.id === station.id) {
+      // Toggle play/pause for current station
+      setIsPlaying(!isPlaying);
+    } else {
+      // Stop current audio before switching
+      setIsPlaying(false);
+      setCurrentStation(null);
+      
+      // Small delay to ensure cleanup
+      requestAnimationFrame(() => {
+        setCurrentStation(station);
+        setIsPlaying(true);
+      });
+    }
   };
 
   const handleToggleFavorite = (station: Station) => {
@@ -50,7 +62,7 @@ export function StationList() {
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
         {stations.map((station: Station, index: number) => (
           <StationCard
             key={station.id || `station-${index}`}
@@ -64,21 +76,30 @@ export function StationList() {
       </div>
       
       {totalPages > 1 && (
-        <div className="flex justify-center mt-8 space-x-2">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => handlePageChange(i + 1)}
-              className={`px-4 py-2 rounded-md ${
-                currentPage === i + 1
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-              }`}
-              aria-label={`Go to page ${i + 1}`}
-            >
-              {i + 1}
-            </button>
-          ))}
+        <div className="flex justify-center items-center gap-2 mt-8 mb-20">
+          <button
+            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 
+                     text-gray-700 dark:text-gray-300 disabled:opacity-50"
+            aria-label="Previous page"
+          >
+            Previous
+          </button>
+          
+          <span className="mx-4 text-gray-600 dark:text-gray-400">
+            Page {currentPage} of {totalPages}
+          </span>
+          
+          <button
+            onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 
+                     text-gray-700 dark:text-gray-300 disabled:opacity-50"
+            aria-label="Next page"
+          >
+            Next
+          </button>
         </div>
       )}
       

@@ -16,6 +16,11 @@ export function StationCard({
   onPlay,
   onFavorite,
 }: StationCardProps) {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onPlay();
+  };
+
   return (
     <div className="group relative bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md 
                     transition-all duration-200 overflow-hidden">
@@ -34,7 +39,7 @@ export function StationCard({
         
         <div className="mt-4 flex items-center justify-between">
           <button
-            onClick={onPlay}
+            onClick={handleClick}
             className="p-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white 
                      transition-colors duration-200"
             aria-label={isPlaying ? `Pause ${station.name}` : `Play ${station.name}`}

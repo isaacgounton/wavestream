@@ -8,7 +8,7 @@ export function Header() {
   const { isDarkMode, toggleTheme } = useTheme();
   const { searchStations, isLoading } = useStations();
   const [searchTerm, setSearchTerm] = React.useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 2000);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   React.useEffect(() => {
     if (debouncedSearchTerm) {
@@ -24,14 +24,23 @@ export function Header() {
     // through the useDebounce hook
   };
 
+  const handleHomeClick = () => {
+    setSearchTerm('');
+    window.location.reload(); // This will reset to default stations
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-2">
+          <button 
+            onClick={handleHomeClick}
+            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+            aria-label="Go to home page"
+          >
             <Radio className="w-6 h-6 text-indigo-600" />
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">WaveStream</h1>
-          </div>
+          </button>
           
           <div className="flex-1 max-w-xl mx-8">
             <div className="relative">
